@@ -1,5 +1,6 @@
 from enum import Enum
 from functools import reduce
+from util import stargs, map_dict, merge_dicts
 
 # dead note
 X = 'x'
@@ -27,18 +28,25 @@ class Note(Enum):
     Bb = 10
     B = 11
     Bs = 0
+    X = float('-inf')
 
     def __add__(self, interval):
+        if not isinstance(interval, Interval):
+            raise TypeError("Can only add intervals to notes")
+        if self == Note.X:
+            raise TypeError("Dead note is not a note")
         return Note((self.value + interval.value) % 12)
 
     def __radd__(self, interval):
         return self.__add__(interval)
 
+    def __bool__(self):
+        return self != Note.X
 
-
-# TODO: octaves?
-# maybe not, "bass" is just first string with note played
-STANDARD = (Note.E, Note.A, Note.D, Note.G, Note.B, Note.E)
+    def interval_to(self, note):
+        if note == Note.X:
+            raise TypeError("Dead note is not a note")
+        return Interval((note.value - self.value) % 12)
 
 
 class Interval(Enum):
@@ -71,78 +79,49 @@ class Interval(Enum):
     FLAT_THIRTEENTH = 8
     THIRTEENTH = 10
     SHARP_THIRTEENTH = 11
-
-
-class Add(Enum):
-    '''
-    Enum of common added notes
-    TODO: Probably can just add these names to Interval
-    '''
-    b5 = 0
-    s5 = 1
+    b2 = 1
+    a2 = 2
+    s2 = 3
+    m3 = 3
+    M3 = 4
+    s3 = 4
+    b4 = 4
+    a4 = 5
+    s4 = 6
+    b5 = 6
+    a5 = 7
+    s5 = 8
+    m6 = 8
+    M6 = 9
+    s6 = 10
+    d7 = 9
+    m7 = 10
+    M7 = 11
+    b9 = 1
     a9 = 2
-    b9 = 3
-    s9 = 4
+    s9 = 3
+    b11 = 4
     a11 = 5
-    b11 = 6
-    s11 = 7
-    a13 = 8
-    b13 = 9
+    s11 = 6
+    b13 = 8
+    a13 = 9
     s13 = 10
-    m3 = 11
-    M3 = 12
-    m7 = 13
-    M7 = 14
-    b2 = 15
-    a2 = 16
-    s2 = 17
-    b6 = 18
-    a6 = 19
-    s6 = 20
-    b4 = 21
-    a4 = 22
-    s4 = 23
-    a5 = 24
-    s3 = 25
-    d7 = 26
 
+    def __add__(self, interval):
+        return Interval((self.value + interval.value) % 12)
 
-def map_dict(value, keys):
-    out = dict()
-    for key in keys:
-        out[key] = value
-    return out
+    def __sub__(self, interval):
+        return Interval((self.value - interval.value) % 12)
 
+    def __gt__(self, interval):
+        if not isinstance(interval, Interval):
+            raise TypeError("Can only compare Intervals")
+        return self.value > interval.value
 
-def stargs(f):
-    def helper(args):
-        return f(*args)
-    return helper
-
-
-NINTHS = frozenset((Interval.MINOR_SECOND, Interval.MAJOR_SECOND,
-                    Interval.AUGMENTED_SECOND, Interval.NINTH,
-                    Interval.FLAT_NINTH, Interval.SHARP_NINTH,
-                    Add.b9, Add.a9, Add.s9))
-THIRDS = frozenset((Interval.MINOR_THIRD, Interval.MAJOR_THIRD,
-                    Interval.AUGMENTED_THIRD, Add.m3, Add.M3, Add.s3))
-ELEVENTHS = frozenset((Interval.DIMINISHED_FOURTH, Interval.PERFECT_FOURTH,
-                       Interval.AUGMENTED_FOURTH, Interval.FLAT_ELEVENTH,
-                       Interval.ELEVENTH, Interval.SHARP_ELEVENTH, Add.b4,
-                       Add.a4, Add.s4, Add.b11, Add.a11, Add.s11))
-FIFTHS = frozenset((Interval.DIMINISHED_FIFTH, Interval.PERFECT_FIFTH,
-                    Interval.AUGMENTED_FIFTH, Add.b5, Add.a5, Add.s5))
-THIRTEENTHS = frozenset((Interval.MINOR_SIXTH, Interval.MAJOR_SIXTH,
-                         Interval.AUGMENTED_SIXTH, Interval.THIRTEENTH,
-                         Interval.FLAT_THIRTEENTH, Interval.SHARP_THIRTEENTH,
-                         Add.a6, Add.b6, Add.s6, Add.b13, Add.a13, Add.s13))
-SEVENTHS = frozenset((Interval.MAJOR_SEVENTH, Interval.MINOR_SEVENTH,
-                      Interval.DIMINISHED_SEVENTH, Add.m7, Add.M7, Add.d7))
-
-
-def merge_dicts(a, b):
-    a.update(b)
-    return a
+    def __lt__(self, interval):
+        if not isinstance(interval, Interval):
+            raise TypeError("Can only compare Intervals")
+        return self.value < interval.value
 
 
 class Degree(Enum):
@@ -156,17 +135,6 @@ class Degree(Enum):
     NINTH = 6
     ELEVENTH = 7
     THIRTEENTH = 8
-
-
-DEGREE_MAP = reduce(lambda prev, curr: merge_dicts(prev, curr),
-                    map(stargs(map_dict), ((Degree.NINTH, NINTHS),
-                                           (Degree.THIRD, THIRDS),
-                                           (Degree.ELEVENTH, ELEVENTHS),
-                                           (Degree.FIFTH, FIFTHS),
-                                           (Degree.THIRTEENTH, THIRTEENTHS),
-                                           (Degree.SEVENTH, SEVENTHS),
-                                           (Degree.ROOT, {Interval.ROOT}))),
-                    dict())
 
 
 class Quality(Enum):
@@ -189,18 +157,9 @@ class Quality(Enum):
     MIN_MAJ = 13
 
 
-QUALITIES = {
-    '7': Quality.DOM,
-    'ø': Quality.HALF_DIM,
-    'o': Quality.DIM,
-    'x': Quality.AUG
-}
-
-
 class Extended(Enum):
     '''
     Enum of common extensions
-    # TODO: b13 extension?
     '''
     E7 = 0
     E9 = 1
@@ -212,19 +171,37 @@ class Extended(Enum):
     Es11 = 7
     Eb13 = 8
     Es13 = 9
-    # TODO: b13, s13, etc
 
 
-EXTENDED = {
-    '7': Extended.E7,
-    '9': Extended.E9,
-    '11': Extended.E11,
-    '13': Extended.E13
-}
+# TODO: aliases do fuck this up. use .name property?
+NINTHS = frozenset((Interval.MINOR_SECOND, Interval.MAJOR_SECOND,
+                    Interval.AUGMENTED_SECOND, Interval.NINTH,
+                    Interval.FLAT_NINTH, Interval.SHARP_NINTH))
+THIRDS = frozenset((Interval.MINOR_THIRD, Interval.MAJOR_THIRD,
+                    Interval.AUGMENTED_THIRD))
+ELEVENTHS = frozenset((Interval.DIMINISHED_FOURTH, Interval.PERFECT_FOURTH,
+                       Interval.AUGMENTED_FOURTH, Interval.FLAT_ELEVENTH,
+                       Interval.ELEVENTH, Interval.SHARP_ELEVENTH))
+FIFTHS = frozenset((Interval.DIMINISHED_FIFTH, Interval.PERFECT_FIFTH,
+                    Interval.AUGMENTED_FIFTH))
+THIRTEENTHS = frozenset((Interval.MINOR_SIXTH, Interval.MAJOR_SIXTH,
+                         Interval.AUGMENTED_SIXTH, Interval.THIRTEENTH,
+                         Interval.FLAT_THIRTEENTH, Interval.SHARP_THIRTEENTH))
+SEVENTHS = frozenset((Interval.MAJOR_SEVENTH, Interval.MINOR_SEVENTH,
+                      Interval.DIMINISHED_SEVENTH))
 
+# map degrees to intervals
+DEGREE_MAP = reduce(lambda prev, curr: merge_dicts(prev, curr),
+                    map(stargs(map_dict), ((Degree.NINTH, NINTHS),
+                                           (Degree.THIRD, THIRDS),
+                                           (Degree.ELEVENTH, ELEVENTHS),
+                                           (Degree.FIFTH, FIFTHS),
+                                           (Degree.THIRTEENTH, THIRTEENTHS),
+                                           (Degree.SEVENTH, SEVENTHS),
+                                           (Degree.ROOT, {Interval.ROOT}))),
+                    dict())
 
-ADD =   {
-    'b5': Add.b5,
-    '#5': Add.s5,
-    # etc
-}
+# TODO: octaves?
+# maybe not, "bass" is just first string with note played
+# but maybe a 9th should always be +1 oct
+STANDARD = (Note.E, Note.A, Note.D, Note.G, Note.B, Note.E)

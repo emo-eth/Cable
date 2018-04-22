@@ -32,6 +32,12 @@ def get_intervals(bass, root, quality, extended, *add):
     return bag_intervals(intervals, extended_intervals, add)
 
 
+def get_relative_interval(root, relative_note, interval, octave=None):
+    # get octave between root and open string
+    target_note = root + interval
+    return relative_note.interval_to(target_note)
+
+
 def bag_intervals(quality, extended, add):
     '''Return a dict of degrees to intervals
     Ensures that extended notes override quality notes, and that added notes
@@ -48,7 +54,29 @@ def bag_intervals(quality, extended, add):
 
 
 def get_quality_intervals(quality):
+    if quality is None:
+        return []
     return QUALITY_NOTE_MAP[quality]
+
+
+def get_extended_intervals(quality, extended):
+    '''Get the extended notes included in a chord extension'''
+    if extended is None or (extended == Extended.E7 and
+                            (quality == Quality.DIM or
+                             quality == Quality.DOM)):
+        return []
+    if quality in (Quality.MAJ, Quality.MIN_MAJ) or (quality == Quality.MAJ and
+                                                     extended == Extended.E7):
+        notes = [Interval.MAJOR_SEVENTH]
+    else:
+        notes = [Interval.MINOR_SEVENTH]
+    extended_notes = EXTENDED_NOTE_MAP[extended] if extended else []
+    return notes + extended_notes
+
+
+def score_difficulty(fingering):
+    # TODO: account for barre chords
+    return len(set(filter(bool, fingering)))
 
 
 QUALITY_NOTE_MAP = {
@@ -80,22 +108,6 @@ QUALITY_NOTE_MAP = {
                       Interval.PERFECT_FIFTH, Interval.MAJOR_SEVENTH]
 }
 
-
-def get_extended_intervals(quality, extended):
-    '''Get the extended notes included in a chord extension'''
-    if extended is None or (extended == Extended.E7 and
-                            (quality == Quality.DIM or
-                             quality == Quality.DOM)):
-        return []
-    if quality in (Quality.MAJ, Quality.MIN_MAJ) or (quality == Quality.MAJ and
-                                                     extended == Extended.E7):
-        notes = [Interval.MAJOR_SEVENTH]
-    else:
-        notes = [Interval.MINOR_SEVENTH]
-    extended_notes = EXTENDED_NOTE_MAP[extended] if extended else []
-    return notes + extended_notes
-
-
 # TODO: Define priorities
 EXTENDED_NOTE_MAP = {
     Extended.Eb9: [Interval.MINOR_SECOND],
@@ -110,7 +122,6 @@ EXTENDED_NOTE_MAP = {
                    Interval.PERFECT_FOURTH, Interval.MAJOR_SIXTH],
     Extended.Es13: [Interval.MAJOR_SECOND,
                     Interval.PERFECT_FOURTH, Interval.AUGMENTED_SIXTH]
-
 }
 
 
