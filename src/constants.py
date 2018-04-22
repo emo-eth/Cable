@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, auto
 from functools import reduce
 from util import stargs, map_dict, merge_dicts
 
@@ -80,7 +80,9 @@ class Interval(Enum):
     THIRTEENTH = 10
     SHARP_THIRTEENTH = 11
     b2 = 1
+    m2 = 1
     a2 = 2
+    M2 = 2
     s2 = 3
     m3 = 3
     M3 = 4
@@ -125,16 +127,16 @@ class Interval(Enum):
 
 
 class Degree(Enum):
-    ROOT = -1
-    SECOND = 0
-    THIRD = 1
-    FOURTH = 2
-    FIFTH = 3
-    SIXTH = 4
-    SEVENTH = 5
-    NINTH = 6
-    ELEVENTH = 7
-    THIRTEENTH = 8
+    ROOT = auto()
+    SECOND = auto()
+    THIRD = auto()
+    FOURTH = auto()
+    FIFTH = auto()
+    SIXTH = auto()
+    SEVENTH = auto()
+    NINTH = auto()
+    ELEVENTH = auto()
+    THIRTEENTH = auto()
 
 
 class Quality(Enum):

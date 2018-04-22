@@ -1,7 +1,7 @@
 # Cable
 A fretted instrument chord generator written in Python
 
-Create a new instance of Cable, optionally specifying a tuning and maximum number of spanned frets
+Create a new instance of Cable, optionally specifying a tuning and maximum number of spanned frets. The defaults are shown here
 ```
 from Cable import Cable, STANDARD, Note, Interval, Quality, Extension
 cable = Cable.Cable(tuning=STANDARD, span=3)
