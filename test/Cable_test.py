@@ -3,7 +3,7 @@ import sys
 sys.path.append('../src')
 import chordUtils as cu
 from Cable import Cable
-from constants import STANDARD, Note, Quality, Interval, Extended
+from constants import STANDARD, Note, Quality, Interval, Extension
 from util import min_max
 
 E_MAJ_OPEN = [0, 2, 2, 1, 0, 0]
@@ -45,7 +45,7 @@ class CableTest(unittest.TestCase):
     def test_A_MIN_7(self):
         cable = Cable(STANDARD, 3)
         results = cable.generate(
-            Note.A, quality=Quality.MIN, extended=Extended.E7)
+            Note.A, quality=Quality.MIN, extension=Extension.E7)
         results = list(results)
         print(len(results))
         self.assertTrue(A_MIN_7 in results)
@@ -53,7 +53,7 @@ class CableTest(unittest.TestCase):
     def test_E_MAJ_9(self):
         cable = Cable(STANDARD, 3)
         results = cable.generate(Note.E, quality=Quality.MAJ,
-                                 extended=Extended.E9)
+                                 extension=Extension.E9)
         results = list(results)
         print(len(results))
         self.assertTrue(E_MAJ_9 in results)
@@ -61,7 +61,7 @@ class CableTest(unittest.TestCase):
     def test_E_MIN_7_b13(self):
         cable = Cable(STANDARD, 3)
         results = cable.generate(Note.E, Interval.b13, quality=Quality.MIN,
-                                 extended=Extended.E7, )
+                                 extension=Extension.E7, )
         results = list(results)
         print(len(results))
         self.assertTrue(E_MIN_7_b13 in results)
@@ -69,22 +69,22 @@ class CableTest(unittest.TestCase):
     def test_Eb_MAJ_9(self):
         cable = Cable(STANDARD, 3)
         results = cable.generate(Note.Eb, quality=Quality.MAJ,
-                                 extended=Extended.E9)
+                                 extension=Extension.E9)
         self.assertTrue(any(filter(lambda x: x[0] == 11 and x[1] == 13,
                                    results)))
         self.assertTrue(Eb_MAJ_9 in results)
 
     def test_intervals(self):
-        # self.interval_helper(Note.Eb, Quality.MAJ, extended=Extended.E9)
+        # self.interval_helper(Note.Eb, Quality.MAJ, extension=Extension.E9)
         self.interval_helper(Note.A, Quality.MIN,
-                             Interval.b13, extended=Extended.E7)
+                             Interval.b13, extension=Extension.E7)
         # self.interval_helper(Note.E, Quality.MAJ)
 
-    def interval_helper(self, note, quality, *add, extended=None):
+    def interval_helper(self, note, quality, *add, extension=None):
         cable = Cable(STANDARD, 3)
         results = cable.generate(
-            note, quality=quality, extended=extended, *add)
-        intervals = set(cu.get_intervals(note, quality, extended, *add))
+            note, quality=quality, extension=extension, *add)
+        intervals = set(cu.get_intervals(note, quality, extension, *add))
         result_intervals = list(map(lambda x:
                                     set(cu.get_intervals_from_fingering(
                                         STANDARD, note, x)), results))
@@ -106,7 +106,7 @@ class CableTest(unittest.TestCase):
     def test_E_13(self):
         cable = Cable(STANDARD, 3)
         results = cable.generate(Note.E,
-                                 extended=Extended.E13)
+                                 extension=Extension.E13)
         results = list(results)
         print(results)
         self.assertTrue(len(results))

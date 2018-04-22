@@ -157,7 +157,7 @@ class Quality(Enum):
     MIN_MAJ = 13
 
 
-class Extended(Enum):
+class Extension(Enum):
     '''
     Enum of common extensions
     '''

@@ -1,7 +1,7 @@
 import unittest
 import sys
 sys.path.append('../src')
-from constants import Quality, Degree, Note, Interval, Extended
+from constants import Quality, Degree, Note, Interval, Extension
 
 
 class ConstantsTest(unittest.TestCase):

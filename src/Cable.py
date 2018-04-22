@@ -2,23 +2,23 @@
 import chordUtils as cu
 import util
 from itertools import chain
-from constants import Interval, Note
+from constants import Interval, Note, STANDARD
 from collections import Counter
 
 
 class Cable(object):
 
-    def __init__(self, tuning, span=3):
+    def __init__(self, tuning=STANDARD, span=3):
         self.tuning = tuning
         self.span = span
 
-    def generate(self, root, *add, bass=None, quality=None, extended=None):
+    def generate(self, root, *add, bass=None, quality=None, extension=None):
         """
         generate('A', quality=Quality.MAJ, extended=Extended.E7, Add.b13)
         Params:
             root: str - name of root to generate plus any sharp/flats. Capital
                 vs lowercase indicates major vs minor unless quality is
-                specified TODO: nah lol
+                specified
             bass: Note
             quality: Quality - overall quality of root to generate without
                 extensions
@@ -28,7 +28,9 @@ class Cable(object):
                 other notes
                 TODO: add should also alter
         """
-        intervals = cu.get_intervals(root, quality, extended, *add)
+        if quality is None and extension is None and len(add) == 0:
+            quality = quality.MAJ
+        intervals = cu.get_intervals(root, quality, extension, *add)
         # notes = map(lambda interval: root + interval,
         #             intervals)
         # print(list(notes))
