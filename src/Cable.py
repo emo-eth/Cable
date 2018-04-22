@@ -11,7 +11,7 @@ class Cable(object):
         self.tuning = tuning
         self.span = span
 
-    def generate(self, root, bass=None, quality=None, extended=None, *add):
+    def generate(self, root, *add, bass=None, quality=None, extended=None):
         """
         generate('A', quality=Quality.MAJ, extended=Extended.E7, Add.b13)
         Params:

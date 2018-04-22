@@ -1,4 +1,4 @@
-from constants import Quality, Interval, Extended, Degree, DEGREE_MAP
+from constants import Note, Quality, Interval, Extended, Degree, DEGREE_MAP
 
 
 def is_major(chord_name):
@@ -62,21 +62,31 @@ def get_quality_intervals(quality):
 def get_extended_intervals(quality, extended):
     '''Get the extended notes included in a chord extension'''
     if extended is None or (extended == Extended.E7 and
-                            (quality == Quality.DIM or
-                             quality == Quality.DOM)):
+                            quality in {Quality.DIM, Quality.DOM,
+                                        Quality.MIN_MAJ}):
         return []
-    if quality in (Quality.MAJ, Quality.MIN_MAJ) or (quality == Quality.MAJ and
-                                                     extended == Extended.E7):
+    if extended == Extended.E7:
+        if quality in (Quality.MIN, Quality.HALF_DIM):
+            return [Interval.MINOR_SEVENTH]
+        elif (quality == Quality.MAJ):
+            return [Interval.MAJOR_SEVENTH]
+    elif quality in (Quality.MAJ, Quality.MIN_MAJ):
         notes = [Interval.MAJOR_SEVENTH]
     else:
         notes = [Interval.MINOR_SEVENTH]
-    extended_notes = EXTENDED_NOTE_MAP[extended] if extended else []
+    extended_notes = EXTENDED_NOTE_MAP[extended]
     return notes + extended_notes
 
 
 def score_difficulty(fingering):
     # TODO: account for barre chords
     return len(set(filter(bool, fingering)))
+
+
+def get_intervals_from_fingering(tuning, root, fingering):
+    filtered = filter(lambda x: x[1] != Note.X, zip(tuning, fingering))
+    notes = map(lambda t: t[0] + Interval(t[1] % 12), filtered)
+    return set(map(lambda note: root.interval_to(note), notes))
 
 
 QUALITY_NOTE_MAP = {

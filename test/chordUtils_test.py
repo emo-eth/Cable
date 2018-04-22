@@ -22,6 +22,15 @@ class ChordUtilsTest(unittest.TestCase):
         self.assertTrue(Interval.MAJOR_SEVENTH in intervals)
         self.assertTrue(Interval.MAJOR_SECOND in intervals)
 
+    def test_extended_intervals_minor(self):
+        intervals = set(cu.get_intervals(
+            None, Note.A, Quality.MIN, Extended.E7))
+        self.assertTrue(len(intervals) == 4)
+        self.assertTrue(Interval.ROOT in intervals)
+        self.assertTrue(Interval.MINOR_THIRD in intervals)
+        self.assertTrue(Interval.PERFECT_FIFTH in intervals)
+        self.assertTrue(Interval.MINOR_SEVENTH in intervals)
+
     def test_extended_add_intervals(self):
         intervals = set(cu.get_intervals(None, Note.A, Quality.MAJ, Extended.E9,
                                          Interval.b9))
