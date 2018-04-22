@@ -2,7 +2,7 @@
 import chordUtils as cu
 import util
 from itertools import chain
-from constants import Interval, Note, STANDARD
+from constants import Quality, Interval, Note, STANDARD
 from collections import Counter
 
 

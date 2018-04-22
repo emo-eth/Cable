@@ -47,6 +47,11 @@ class Note(Enum):
         if note == Note.X:
             raise TypeError("Dead note is not a note")
         return Interval((note.value - self.value) % 12)
+    
+    def __repr__(self):
+        if self == Note.X:
+            return 'x'
+        return super().__repr__()
 
 
 class Interval(Enum):
