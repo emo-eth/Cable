@@ -204,6 +204,6 @@ DEGREE_MAP = reduce(lambda prev, curr: merge_dicts(prev, curr),
                     dict())
 
 # TODO: octaves?
-# maybe not, "bass" is just first string with note played
-# but maybe a 9th should always be +1 oct
+# eg maybe a 9th should always be +1 oct, bass notes on instruments like 
+# banjo and ukulele
 STANDARD = (Note.E, Note.A, Note.D, Note.G, Note.B, Note.E)

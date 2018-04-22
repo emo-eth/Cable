@@ -21,7 +21,7 @@ cable.generate(Note.Fs, Interval.a4, Interval.a5)
 
 # A#maj#11 chord
 cable.generate(Note.As, # Sharp/flat notes are succeded by s or b
-               Interval.M7,  # capital M for a major 3rd, 7th, or 6th. Lowercase m for minor
+               Interval.M7,  # capital M for a major 2nd, 3rd, 6th, or 7th. Lowercase m for minor
                Interval.a9,  # Standard added intervals are preceded by the letter 'a'
                Interval.s11, # Sharp/flat intervals are preceded by s or b
                quality=Quality.MAJ)

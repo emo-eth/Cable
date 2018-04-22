@@ -26,14 +26,10 @@ class Cable(object):
             *add: collection(Add) - notes to add. No quality/extended specified
                 will generate roots with the root and these additions, with no
                 other notes
-                TODO: add should also alter
         """
         if quality is None and extension is None and len(add) == 0:
-            quality = quality.MAJ
+            quality = Quality.MAJ
         intervals = cu.get_intervals(root, quality, extension, *add)
-        # notes = map(lambda interval: root + interval,
-        #             intervals)
-        # print(list(notes))
         yield from self.generate_chords(root, intervals, self.tuning)
 
     def generate_chords(self, root, intervals, strings, placed=set(),
@@ -79,7 +75,6 @@ class Cable(object):
         else:
             span_below = span_above = span_between = {}
 
-        # TODO: assert >3 notes on same fret be lowest fret
         for interval in intervals:
             # curry args with a function call we can unpack for less verbosity
             def args(): return (root, intervals, strings[1:], placed.copy(),
@@ -146,7 +141,7 @@ class Cable(object):
     def unable_to_voice(strings, intervals, placed):
         # TODO: make smart about preferred notes
         return len(strings) < (len(intervals) - len(placed))
-    
+
     @staticmethod
     def invalid_fingering(filtered_fingering, frets):
         if not filtered_fingering:
