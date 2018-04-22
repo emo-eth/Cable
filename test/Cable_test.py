@@ -4,6 +4,7 @@ sys.path.append('../src')
 import chordUtils as cu
 from Cable import Cable
 from constants import STANDARD, Note, Quality, Interval, Extended
+from util import min_max
 
 E_MAJ_OPEN = [0, 2, 2, 1, 0, 0]
 E_MAJ_7 = [0, 2, 1, 1, 0, 0]
@@ -15,6 +16,17 @@ A_MIN_7 = [Note.X, 0, 2, 0, 1, 0]
 
 
 class CableTest(unittest.TestCase):
+
+    def test_slash(self):
+        cable = Cable(STANDARD, 3)
+        results = cable.generate(Note.A, bass=Note.G, quality=Quality.MAJ)
+        first_intervals = map(lambda result:
+                              cu.get_intervals_from_fingering(STANDARD, Note.A,
+                                                              result)[0],
+                              results)
+        first_notes = list(map(lambda interval: Note.A + interval,
+                               first_intervals))
+        self.assertTrue(all(map(lambda note: note == Note.G, first_notes)))
 
     def test_E_MAJ(self):
         cable = Cable(STANDARD, 3)
@@ -72,13 +84,26 @@ class CableTest(unittest.TestCase):
         cable = Cable(STANDARD, 3)
         results = cable.generate(
             note, quality=quality, extended=extended, *add)
-        intervals = set(cu.get_intervals(None, note, quality, extended, *add))
-        result_intervals = list(map(lambda x: cu.get_intervals_from_fingering(
-            STANDARD, note, x), results))
+        intervals = set(cu.get_intervals(note, quality, extended, *add))
+        result_intervals = list(map(lambda x:
+                                    set(cu.get_intervals_from_fingering(
+                                        STANDARD, note, x)), results))
         result_set = set(map(frozenset, result_intervals))
         print(result_set)
 
         self.assertTrue(all(map(lambda x: intervals == x, result_intervals)))
+
+    def test_span(self):
+        self.span_helper(3)
+        self.span_helper(2)
+
+    def span_helper(self, span):
+        cable = Cable(STANDARD, span)
+        results = cable.generate(Note.E, quality=Quality.MAJ)
+        results = map(lambda x: filter(bool, x), results)
+        min_maxes = map(min_max, results)
+        abs_diffs = map(lambda x: abs(x[0] - x[1]), min_maxes)
+        self.assertTrue(all(map(lambda x: x <= span, abs_diffs)))
 
 
 if __name__ == '__main__':

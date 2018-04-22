@@ -8,23 +8,21 @@ from constants import Quality, Degree, Note, Interval, Extended
 class ChordUtilsTest(unittest.TestCase):
 
     def test_quality_intervals(self):
-        intervals = set(cu.get_intervals(None, Note.A, Quality.MAJ, None))
+        intervals = set(cu.get_intervals(Note.A, Quality.MAJ, None))
         self.assertTrue(len(intervals) == 3)
         self.assertTrue(Interval.ROOT in intervals)
         self.assertTrue(Interval.MAJOR_THIRD in intervals)
         self.assertTrue(Interval.PERFECT_FIFTH in intervals)
 
     def test_extended_intervals(self):
-        intervals = set(cu.get_intervals(
-            None, Note.A, Quality.MAJ, Extended.E9))
+        intervals = set(cu.get_intervals(Note.A, Quality.MAJ, Extended.E9))
         self.assertTrue(len(intervals) == 5)
         self.assertTrue(Interval.ROOT in intervals)
         self.assertTrue(Interval.MAJOR_SEVENTH in intervals)
         self.assertTrue(Interval.MAJOR_SECOND in intervals)
 
     def test_extended_intervals_minor(self):
-        intervals = set(cu.get_intervals(
-            None, Note.A, Quality.MIN, Extended.E7))
+        intervals = set(cu.get_intervals(Note.A, Quality.MIN, Extended.E7))
         self.assertTrue(len(intervals) == 4)
         self.assertTrue(Interval.ROOT in intervals)
         self.assertTrue(Interval.MINOR_THIRD in intervals)
@@ -32,7 +30,7 @@ class ChordUtilsTest(unittest.TestCase):
         self.assertTrue(Interval.MINOR_SEVENTH in intervals)
 
     def test_extended_add_intervals(self):
-        intervals = set(cu.get_intervals(None, Note.A, Quality.MAJ, Extended.E9,
+        intervals = set(cu.get_intervals(Note.A, Quality.MAJ, Extended.E9,
                                          Interval.b9))
         self.assertTrue(len(intervals) == 5)
         self.assertTrue(Interval.ROOT in intervals)

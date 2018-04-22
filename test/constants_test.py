@@ -29,7 +29,7 @@ class ConstantsTest(unittest.TestCase):
     def _test_distinguish_intervals(self):
         self.assertFalse(Interval.AUGMENTED_SIXTH in
                          set([Interval.MINOR_SEVENTH]))
-    
+
     def test_x_false(self):
         self.assertFalse(Note.X)
 

@@ -23,10 +23,7 @@ def sharp_flat_delta(note_name):
     return 0
 
 
-def get_intervals(bass, root, quality, extended, *add):
-    notes = []
-    if bass:
-        notes = [bass]
+def get_intervals(root, quality, extended, *add):
     intervals = get_quality_intervals(quality)
     extended_intervals = get_extended_intervals(quality, extended)
     return bag_intervals(intervals, extended_intervals, add)
@@ -86,7 +83,7 @@ def score_difficulty(fingering):
 def get_intervals_from_fingering(tuning, root, fingering):
     filtered = filter(lambda x: x[1] != Note.X, zip(tuning, fingering))
     notes = map(lambda t: t[0] + Interval(t[1] % 12), filtered)
-    return set(map(lambda note: root.interval_to(note), notes))
+    return list(map(lambda note: root.interval_to(note), notes))
 
 
 QUALITY_NOTE_MAP = {

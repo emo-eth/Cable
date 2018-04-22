@@ -27,7 +27,7 @@ class Cable(object):
                 other notes
                 TODO: add should also alter
         """
-        intervals = cu.get_intervals(bass, root, quality, extended, *add)
+        intervals = cu.get_intervals(root, quality, extended, *add)
         # notes = map(lambda interval: root + interval,
         #             intervals)
         # print(list(notes))
@@ -43,7 +43,7 @@ class Cable(object):
         if len(strings) == 0:
             yield fingering
             return
-        filtered_fingering = list(filter(bool, fingering))
+        filtered_fingering = filter(bool, fingering)
         frets = set(filtered_fingering)
         fingers = len(frets)
         if fingers > 4:
@@ -67,47 +67,55 @@ class Cable(object):
 
         # TODO: assert >3 notes on same fret be lowest fret
         for interval in intervals:
-            # TODO: dead notes
+            # curry args with a function call we can unpack for less verbosity
+            def args(): return (root, intervals, strings[1:], placed.copy(),
+                                fingering.copy(), interval)
             if fingers:
-                # TODO: handle previous frets and voicings around 12
                 if interval in span_below:
-                    yield from self._generate_helper(root, intervals, strings[1:],
-                                                     placed.copy(), fingering.copy(),
-                                                     interval,
+                    yield from self._generate_helper(*args(),
                                                      (lambda: min_fret +
                                                       span_below[interval]))
                 if interval in span_above:
-                    yield from self._generate_helper(root, intervals, strings[1:],
-                                                     placed.copy(), fingering.copy(),
-                                                     interval,
+                    yield from self._generate_helper(*args(),
                                                      (lambda: max_fret +
                                                       span_above[interval]))
                 if interval in span_between:
-                    yield from self._generate_helper(root, intervals, strings[1:],
-                                                     placed.copy(), fingering.copy(),
-                                                     interval,
+                    yield from self._generate_helper(*args(),
                                                      (lambda: min_fret +
                                                       span_between[interval]))
             else:
                 # if no fingers have been placed, pick any fret
                 string_interval = cu.get_relative_interval(root, strings[0],
                                                            interval)
-                yield from self._generate_helper(root, intervals, strings[1:],
-                                                 placed.copy(), fingering.copy(),
-                                                 interval,
+                yield from self._generate_helper(*args(),
                                                  lambda: string_interval.value)
             # open string
             if interval == root.interval_to(strings[0]):
-                yield from self._generate_helper(root, intervals, strings[1:],
-                                                 placed.copy(), fingering.copy(),
-                                                 interval, lambda: 0)
+                yield from self._generate_helper(*args(), lambda: 0)
             # dead string
-            yield from self._generate_helper(root, intervals, strings[1:],
-                                             placed.copy(), fingering.copy(),
+            # TODO: add rules for dead strings (no big gaps, etc, or score them
+            # low)
+            yield from self._generate_helper(*(args()[:-1]),
                                              None, lambda: Note.X)
 
-    def _generate_helper(self, root, intervals, strings, placed, fingering, interval,
-                         fret_func):
+    def _generate_helper(self, root, intervals, strings, placed, fingering,
+                         interval, fret_func):
+        """Helper generator to yield results after updating placed intervals
+        and fingering.
+        
+        Arguments:
+            root {Note} -- root note
+            intervals {set(Interval)} -- set of intervals in chord
+            strings {list(Note)} -- remaining open strings
+            placed {set(Interval)} -- Intervals present in fingering thus far
+            fingering {list(int|Note.X)} -- fingering of constructed chord
+                thus far
+            interval {Interval|None} -- interval relative to root that we are
+                adding to the fingering
+            fret_func {func -> int|Note.X} -- possibly curried function to
+                calculate the fret on this string for this fingering
+        """
+
         if interval:
             placed.add(interval)
         fingering = fingering + [fret_func()]
