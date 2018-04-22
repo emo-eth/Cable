@@ -89,8 +89,6 @@ class CableTest(unittest.TestCase):
                                     set(cu.get_intervals_from_fingering(
                                         STANDARD, note, x)), results))
         result_set = set(map(frozenset, result_intervals))
-        print(result_set)
-
         self.assertTrue(all(map(lambda x: intervals == x, result_intervals)))
 
     def test_span(self):
@@ -104,6 +102,15 @@ class CableTest(unittest.TestCase):
         min_maxes = map(min_max, results)
         abs_diffs = map(lambda x: abs(x[0] - x[1]), min_maxes)
         self.assertTrue(all(map(lambda x: x <= span, abs_diffs)))
+    
+    def test_E_13(self):
+        cable = Cable(STANDARD, 3)
+        results = cable.generate(Note.E,
+                                 extended=Extended.E13)
+        results = list(results)
+        print(results)
+        self.assertTrue(len(results))
+
 
 
 if __name__ == '__main__':

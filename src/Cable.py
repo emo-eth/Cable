@@ -3,6 +3,7 @@ import chordUtils as cu
 import util
 from itertools import chain
 from constants import Interval, Note
+from collections import Counter
 
 
 class Cable(object):
@@ -35,6 +36,17 @@ class Cable(object):
 
     def generate_chords(self, root, intervals, strings, placed=set(),
                         fingering=[]):
+        """Helper generator to yield results after updating placed intervals
+        and fingering.
+
+        Arguments:
+            root {Note} -- root note
+            intervals {set(Interval)} -- set of intervals in chord
+            strings {list(Note)} -- remaining open strings
+            placed {set(Interval)} -- Intervals present in fingering thus far
+            fingering {list(int|Note.X)} -- fingering of constructed chord
+                thus far
+        """
         # make sure we can make the whole chord
         # TODO: decide optional notes for large voicings
         if self.unable_to_voice(strings, intervals, placed):
@@ -43,10 +55,10 @@ class Cable(object):
         if len(strings) == 0:
             yield fingering
             return
-        filtered_fingering = filter(bool, fingering)
+        filtered_fingering = list(filter(bool, fingering))
         frets = set(filtered_fingering)
         fingers = len(frets)
-        if fingers > 4:
+        if self.invalid_fingering(filtered_fingering, frets):
             return
         min_fret = max_fret = 0
         if frets:
@@ -102,7 +114,7 @@ class Cable(object):
                          interval, fret_func):
         """Helper generator to yield results after updating placed intervals
         and fingering.
-        
+
         Arguments:
             root {Note} -- root note
             intervals {set(Interval)} -- set of intervals in chord
@@ -130,4 +142,19 @@ class Cable(object):
 
     @staticmethod
     def unable_to_voice(strings, intervals, placed):
+        # TODO: make smart about preferred notes
         return len(strings) < (len(intervals) - len(placed))
+    
+    @staticmethod
+    def invalid_fingering(filtered_fingering, frets):
+        if not filtered_fingering:
+            return False
+        # if requires more than 4 fingers, can't finger
+        if len(frets) > 4:
+            return True
+        counts = Counter(filtered_fingering)
+        lowest = min(counts.keys())
+        # if more than 3 fingered notes above barred, invalid
+        if len(filtered_fingering) - lowest > 3:
+            return True
+        return False

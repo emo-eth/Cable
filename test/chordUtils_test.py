@@ -44,6 +44,16 @@ class ChordUtilsTest(unittest.TestCase):
         self.assertEqual(cu.get_relative_interval(Note.E, Note.Cs,
                                                   Interval.PERFECT_FIFTH),
                          Interval.MINOR_SEVENTH)
+                        
+    def test_13(self):
+        intervals = cu.get_intervals(Note.E, None, Extended.E13)
+        print(intervals)
+        self.assertEqual(len(intervals), 7)
+    
+    def test_11(self):
+        intervals = cu.get_intervals(Note.E, Quality.MAJ, Extended.E11)
+        print(intervals)
+        self.assertEqual(len(intervals), 6)
 
 
 if __name__ == '__main__':
