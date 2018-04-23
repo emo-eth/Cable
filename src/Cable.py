@@ -8,9 +8,10 @@ from collections import Counter
 
 class Cable(object):
 
-    def __init__(self, tuning=STANDARD, span=3):
+    def __init__(self, tuning=STANDARD, span=3, fingers=4):
         self.tuning = tuning
         self.span = span
+        self.fingers = 4
 
     def generate(self, root, *add, bass=None, quality=None, extension=None):
         """
@@ -29,7 +30,7 @@ class Cable(object):
         """
         if quality is None and extension is None and len(add) == 0:
             quality = Quality.MAJ
-        intervals = cu.get_intervals(root, quality, extension, *add)
+        intervals = set(cu.get_intervals(root, quality, extension, *add))
         yield from self.generate_chords(root, intervals, self.tuning)
 
     def generate_chords(self, root, intervals, strings, placed=set(),
@@ -83,8 +84,6 @@ class Cable(object):
                                                  fret_interval.value)
         # dead note, skip string
         # TODO: limit number of skipped strings
-        if len(fingering) == 1 and fingering[0] == 11:
-            print('break')
         yield from self._generate_helper(*args()[:-1],
                                          None, lambda: Note.X)
 
@@ -117,17 +116,16 @@ class Cable(object):
         # TODO: make smart about preferred notes
         return len(strings) < (len(intervals) - len(placed))
 
-    @staticmethod
-    def invalid_fingering(filtered_fingering, frets):
+    def invalid_fingering(self, filtered_fingering, frets):
         if not filtered_fingering:
             return False
         # if requires more than 4 fingers, can't finger
-        if len(frets) > 4:
+        if len(frets) > self.fingers:
             return True
         counts = Counter(filtered_fingering)
         lowest = min(counts.keys())
         # if more than 3 fingered notes above barred, invalid
-        if len(filtered_fingering) - lowest > 3:
+        if len(filtered_fingering) - lowest > (self.fingers - 1):
             return True
         return False
 
