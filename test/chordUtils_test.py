@@ -7,23 +7,23 @@ from constants import Quality, Degree, Note, Interval, Extension
 
 class ChordUtilsTest(unittest.TestCase):
 
-    def test_quality_intervals(self):
+    def test_quality_intervals_MAJ(self):
         intervals = set(cu.get_intervals(Note.A, Quality.MAJ, None))
-        self.assertTrue(len(intervals) == 3)
+        self.assertEqual(len(intervals), 3)
         self.assertTrue(Interval.ROOT in intervals)
         self.assertTrue(Interval.MAJOR_THIRD in intervals)
         self.assertTrue(Interval.PERFECT_FIFTH in intervals)
 
     def test_extension_intervals(self):
         intervals = set(cu.get_intervals(Note.A, Quality.MAJ, Extension.E9))
-        self.assertTrue(len(intervals) == 5)
+        self.assertEqual(len(intervals), 5)
         self.assertTrue(Interval.ROOT in intervals)
         self.assertTrue(Interval.MAJOR_SEVENTH in intervals)
         self.assertTrue(Interval.MAJOR_SECOND in intervals)
 
     def test_extension_intervals_minor(self):
         intervals = set(cu.get_intervals(Note.A, Quality.MIN, Extension.E7))
-        self.assertTrue(len(intervals) == 4)
+        self.assertEqual(len(intervals), 4)
         self.assertTrue(Interval.ROOT in intervals)
         self.assertTrue(Interval.MINOR_THIRD in intervals)
         self.assertTrue(Interval.PERFECT_FIFTH in intervals)
@@ -31,11 +31,11 @@ class ChordUtilsTest(unittest.TestCase):
 
     def test_extension_add_intervals(self):
         intervals = set(cu.get_intervals(Note.A, Quality.MAJ, Extension.E9,
-                                         Interval.b9))
-        self.assertTrue(len(intervals) == 5)
+                                         Interval.b11))
+        self.assertEqual(len(intervals), 5)
         self.assertTrue(Interval.ROOT in intervals)
         self.assertTrue(Interval.MAJOR_SEVENTH in intervals)
-        self.assertTrue(Interval.b9 in intervals)
+        self.assertTrue(Interval.b11 in intervals)
 
     def test_get_relative_interval(self):
         self.assertEqual(cu.get_relative_interval(Note.E, Note.A,
