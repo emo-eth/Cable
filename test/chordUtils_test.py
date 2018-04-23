@@ -47,12 +47,10 @@ class ChordUtilsTest(unittest.TestCase):
 
     def test_13(self):
         intervals = cu.get_intervals(Note.E, None, Extension.E13)
-        print(intervals)
         self.assertEqual(len(intervals), 7)
 
     def test_11(self):
         intervals = cu.get_intervals(Note.E, Quality.MAJ, Extension.E11)
-        print(intervals)
         self.assertEqual(len(intervals), 6)
 
 

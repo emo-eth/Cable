@@ -70,6 +70,8 @@ class CableTest(unittest.TestCase):
         cable = Cable(STANDARD, 3)
         results = cable.generate(Note.Eb, quality=Quality.MAJ,
                                  extension=Extension.E9)
+        results = list(results)
+        print(len(results))
         self.assertTrue(any(filter(lambda x: x[0] == 11 and x[1] == 13,
                                    results)))
         self.assertTrue(Eb_MAJ_9 in results)
@@ -108,7 +110,6 @@ class CableTest(unittest.TestCase):
         results = cable.generate(Note.E,
                                  extension=Extension.E13)
         results = list(results)
-        print(results)
         self.assertTrue(len(results))
 
 

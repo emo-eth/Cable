@@ -58,54 +58,35 @@ class Cable(object):
         fingers = len(frets)
         if self.invalid_fingering(filtered_fingering, frets):
             return
-        min_fret = max_fret = 0
+        lowest_fret = highest_fret = min_fret = max_fret = 0
         if frets:
-            min_fret, max_fret = util.min_max(frets)
-        remaining_span = self.span - (max_fret - min_fret)
-
-        # allowable frets
-        if fingers:
-            span_below = {self.calculate_interval(root, strings[0], min_fret, x):
-                          x for x in range(-remaining_span, 0)
-                          if (x + min_fret) > 0}
-            span_above = {self.calculate_interval(root, strings[0], max_fret, x):
-                          x for x in range(1, remaining_span + 1)}
-            span_between = {self.calculate_interval(root, strings[0], min_fret, x):
-                            x for x in range(((max_fret - min_fret) + 1))}
-        else:
-            span_below = span_above = span_between = {}
-
+            lowest_fret, highest_fret = util.min_max(frets)
+            remaining_span = self.span - (highest_fret - lowest_fret)
+            min_fret = lowest_fret - remaining_span
+            max_fret = highest_fret + remaining_span
+            if min_fret < 0:
+                min_fret = 0
+        min_fret_interval = Interval(min_fret)
+        min_fretted_note = strings[0] + min_fret_interval
         for interval in intervals:
+            fret_interval = min_fretted_note.interval_to(root + interval)
             # curry args with a function call we can unpack for less verbosity
+
             def args(): return (root, intervals, strings[1:], placed.copy(),
                                 fingering.copy(), interval)
-            if fingers:
-                if interval in span_below:
-                    yield from self._generate_helper(*args(),
-                                                     (lambda: min_fret +
-                                                      span_below[interval]))
-                if interval in span_above:
-                    yield from self._generate_helper(*args(),
-                                                     (lambda: max_fret +
-                                                      span_above[interval]))
-                if interval in span_between:
-                    yield from self._generate_helper(*args(),
-                                                     (lambda: min_fret +
-                                                      span_between[interval]))
-            else:
-                # if no fingers have been placed, pick any fret
-                string_interval = cu.get_relative_interval(root, strings[0],
-                                                           interval)
-                yield from self._generate_helper(*args(),
-                                                 lambda: string_interval.value)
-            # open string
-            if interval == root.interval_to(strings[0]):
-                yield from self._generate_helper(*args(), lambda: 0)
-            # dead string
-            # TODO: add rules for dead strings (no big gaps, etc, or score them
-            # low)
-            yield from self._generate_helper(*(args()[:-1]),
-                                             None, lambda: Note.X)
+            if (not fingers or  # if no fingers have been placed, pick any fret
+                # otherwise pick any fret between min/max
+                (min_fret <=
+                 min_fret + fret_interval.value <=
+                 max_fret)):
+                yield from self._generate_helper(*args(), lambda: min_fret +
+                                                 fret_interval.value)
+        # dead note, skip string
+        # TODO: limit number of skipped strings
+        if len(fingering) == 1 and fingering[0] == 11:
+            print('break')
+        yield from self._generate_helper(*args()[:-1],
+                                         None, lambda: Note.X)
 
     def _generate_helper(self, root, intervals, strings, placed, fingering,
                          interval, fret_func):
@@ -132,12 +113,6 @@ class Cable(object):
                                         fingering)
 
     @staticmethod
-    def calculate_interval(root, open_string, relative_fret, semitones):
-        return root.interval_to(open_string +
-                                Interval(relative_fret % 12) +
-                                Interval(semitones % 12))
-
-    @staticmethod
     def unable_to_voice(strings, intervals, placed):
         # TODO: make smart about preferred notes
         return len(strings) < (len(intervals) - len(placed))
@@ -155,3 +130,34 @@ class Cable(object):
         if len(filtered_fingering) - lowest > 3:
             return True
         return False
+
+    @staticmethod
+    def can_skip_strings(fingering, intervals):
+        return True
+        counts = Counter(fingering)
+        if counts.get(Note.X, 0) >= 3 and len(intervals) > 2:
+            return False
+        return True
+        # allow leading and trailing dead notes
+        # don't allow interspersed dead notes
+        # don't allow X in between dead notes
+        last_dead = False
+        for fret in fingering:
+            if fret == Note.X:
+                if not last_dead and (dead_count and fret_count):
+                    return False
+                # don't count leading dead notes
+                if frets:
+                    dead_count += 1
+
+                if frets:
+                    last_dead = True
+                # allow tailing dead notes
+
+            else:
+                fret_count += 1
+                last_dead = False
+
+        dead_cont = 0
+        fret_count = 0
+        pass
