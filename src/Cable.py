@@ -15,7 +15,7 @@ class Cable(object):
 
     def generate(self, root, *add, bass=None, quality=None, extension=None):
         """
-        generate('A', quality=Quality.MAJ, extended=Extended.E7, Add.b13)
+        generate('A', Interval.b13, quality=Quality.MAJ, extended=Extended.E7)
         Params:
             root: str - name of root to generate plus any sharp/flats. Capital
                 vs lowercase indicates major vs minor unless quality is
@@ -31,9 +31,9 @@ class Cable(object):
         if quality is None and extension is None and len(add) == 0:
             quality = Quality.MAJ
         intervals = set(cu.get_intervals(root, quality, extension, *add))
-        yield from self.generate_chords(root, intervals, self.tuning)
+        yield from self.generate_chords(root, bass, intervals, self.tuning)
 
-    def generate_chords(self, root, intervals, strings, placed=set(),
+    def generate_chords(self, root, bass, intervals, strings, placed=set(),
                         fingering=[]):
         """Helper generator to yield results after updating placed intervals
         and fingering.
@@ -48,7 +48,7 @@ class Cable(object):
         """
         # make sure we can make the whole chord
         # TODO: decide optional notes for large voicings
-        if self.unable_to_voice(strings, intervals, placed):
+        if self.unable_to_voice(bass, strings, intervals, placed):
             return
         filtered_fingering = list(filter(bool, fingering))
         frets = set(filtered_fingering)
@@ -69,25 +69,31 @@ class Cable(object):
                 min_fret = 0
         min_fret_interval = Interval(min_fret)
         min_fretted_note = strings[0] + min_fret_interval
-        for interval in intervals:
-            fret_interval = min_fretted_note.interval_to(root + interval)
-            # curry args with a function call we can unpack for less verbosity
 
-            def args(): return (root, intervals, strings[1:], placed.copy(),
-                                fingering.copy(), interval)
-            if (not fingers or  # if no fingers have been placed, pick any fret
-                # otherwise pick any fret between min/max
-                (min_fret <=
-                 min_fret + fret_interval.value <=
-                 max_fret)):
-                yield from self._generate_helper(*args(), lambda: min_fret +
-                                                 fret_interval.value)
+        def args(): return (root, bass, intervals, strings[1:], placed.copy(),
+                            fingering.copy())
+        if bass and not filtered_fingering:
+            interval = root.interval_to(bass)
+            yield from self._generate_helper(*args(), interval,
+                                             lambda: interval.value)
+        else:
+            for interval in intervals:
+                fret_interval = min_fretted_note.interval_to(root + interval)
+                # curry args with a function call we can unpack for less verbosity
+
+                if (not fingers or  # if no fingers have been placed, pick any fret
+                    # otherwise pick any fret between min/max
+                    (min_fret <=
+                     min_fret + fret_interval.value <=
+                     max_fret)):
+                    yield from self._generate_helper(*args(), interval, lambda: min_fret +
+                                                     fret_interval.value)
         # dead note, skip string
         # TODO: limit number of skipped strings
-        yield from self._generate_helper(*args()[:-1],
+        yield from self._generate_helper(*args(),
                                          None, lambda: Note.X)
 
-    def _generate_helper(self, root, intervals, strings, placed, fingering,
+    def _generate_helper(self, root, bass, intervals, strings, placed, fingering,
                          interval, fret_func):
         """Helper generator to yield results after updating placed intervals
         and fingering.
@@ -105,16 +111,16 @@ class Cable(object):
                 calculate the fret on this string for this fingering
         """
 
-        if interval:
+        if interval and interval in intervals:
             placed.add(interval)
         fingering = fingering + [fret_func()]
-        yield from self.generate_chords(root, intervals, strings, placed,
+        yield from self.generate_chords(root, bass, intervals, strings, placed,
                                         fingering)
 
     @staticmethod
-    def unable_to_voice(strings, intervals, placed):
+    def unable_to_voice(bass, strings, intervals, placed):
         # TODO: make smart about preferred notes
-        return len(strings) < (len(intervals) - len(placed))
+        return len(strings) < ((len(intervals) + bool(bass)) - len(placed))
 
     def invalid_fingering(self, filtered_fingering, frets):
         if not filtered_fingering:
