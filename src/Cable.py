@@ -28,6 +28,12 @@ class Cable(object):
                 will generate roots with the root and these additions, with no
                 other notes
         """
+        if isinstance(root, cu.Chord):
+            add = root.add
+            bass = root.bass
+            quality = root.quality
+            extension = root.extension
+            root = root.root
         if quality is None and extension is None and len(add) == 0:
             quality = Quality.MAJ
         intervals = set(cu.get_intervals(root, quality, extension, *add))
@@ -48,9 +54,11 @@ class Cable(object):
         """
         # make sure we can make the whole chord
         # TODO: decide optional notes for large voicings
-        if self.unable_to_voice(bass, strings, intervals, placed):
+        bass_interval = root.interval_to(bass) if bass else None
+        if self.unable_to_voice(bass_interval, strings, intervals, placed):
             return
         filtered_fingering = list(filter(bool, fingering))
+        notes_placed = len(list(filter(lambda x: x != Note.X, fingering))) > 0
         frets = set(filtered_fingering)
         fingers = len(frets)
         if self.invalid_fingering(filtered_fingering, frets):
@@ -72,10 +80,9 @@ class Cable(object):
 
         def args(): return (root, bass, intervals, strings[1:], placed.copy(),
                             fingering.copy())
-        if bass and not filtered_fingering:
-            interval = root.interval_to(bass)
-            yield from self._generate_helper(*args(), interval,
-                                             lambda: interval.value)
+        if bass and not notes_placed:
+            yield from self._generate_helper(*args(), bass_interval,
+                                             lambda: bass_interval.value)
         else:
             for interval in intervals:
                 fret_interval = min_fretted_note.interval_to(root + interval)
@@ -118,9 +125,10 @@ class Cable(object):
                                         fingering)
 
     @staticmethod
-    def unable_to_voice(bass, strings, intervals, placed):
+    def unable_to_voice(bass_interval, strings, intervals, placed):
         # TODO: make smart about preferred notes
-        return len(strings) < ((len(intervals) + bool(bass)) - len(placed))
+        add_bass = bass_interval is not None and bass_interval not in intervals
+        return len(strings) < ((len(intervals) + add_bass) - len(placed))
 
     def invalid_fingering(self, filtered_fingering, frets):
         if not filtered_fingering:

@@ -1,4 +1,16 @@
 from constants import Note, Quality, Interval, Extension, Degree
+from itertools import chain
+
+
+class Chord(object):
+    '''Container class for chord information'''
+
+    def __init__(self, root, *add, bass=None, quality=None, extension=None):
+        self.root = root
+        self.add = add
+        self.bass = bass
+        self.quality = quality
+        self.extension = extension
 
 
 def sharp_flat_delta(note_name):
