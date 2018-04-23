@@ -11,7 +11,7 @@ class Cable(object):
     def __init__(self, tuning=STANDARD, span=3, fingers=4):
         self.tuning = tuning
         self.span = span
-        self.fingers = 4
+        self.fingers = fingers
 
     def generate(self, root, *add, bass=None, quality=None, extension=None):
         """
@@ -50,14 +50,14 @@ class Cable(object):
         # TODO: decide optional notes for large voicings
         if self.unable_to_voice(strings, intervals, placed):
             return
-        # base case
-        if len(strings) == 0:
-            yield fingering
-            return
         filtered_fingering = list(filter(bool, fingering))
         frets = set(filtered_fingering)
         fingers = len(frets)
         if self.invalid_fingering(filtered_fingering, frets):
+            return
+        # base case
+        if len(strings) == 0:
+            yield fingering
             return
         lowest_fret = highest_fret = min_fret = max_fret = 0
         if frets:
@@ -123,9 +123,10 @@ class Cable(object):
         if len(frets) > self.fingers:
             return True
         counts = Counter(filtered_fingering)
-        lowest = min(counts.keys())
+        lowest = min(filtered_fingering)
+        lowest_count = counts[lowest]
         # if more than 3 fingered notes above barred, invalid
-        if len(filtered_fingering) - lowest > (self.fingers - 1):
+        if len(filtered_fingering) - lowest_count > (self.fingers - 1):
             return True
         return False
 

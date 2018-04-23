@@ -37,14 +37,6 @@ class ChordUtilsTest(unittest.TestCase):
         self.assertTrue(Interval.MAJOR_SEVENTH in intervals)
         self.assertTrue(Interval.b11 in intervals)
 
-    def test_get_relative_interval(self):
-        self.assertEqual(cu.get_relative_interval(Note.E, Note.A,
-                                                  Interval.PERFECT_FIFTH),
-                         Interval.MAJOR_SECOND)
-        self.assertEqual(cu.get_relative_interval(Note.E, Note.Cs,
-                                                  Interval.PERFECT_FIFTH),
-                         Interval.MINOR_SEVENTH)
-
     def test_13(self):
         intervals = cu.get_intervals(Note.E, None, Extension.E13)
         self.assertEqual(len(intervals), 7)

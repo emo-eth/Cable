@@ -10,7 +10,8 @@ E_MAJ_OPEN = [0, 2, 2, 1, 0, 0]
 E_MAJ_7 = [0, 2, 1, 1, 0, 0]
 E_MAJ_9 = [0, 2, 1, 1, 0, 2]
 E_MIN_7_b13 = [0, 2, 0, 0, 1, 0]
-Eb_MAJ_9 = [11, 13, 12, 12, 11, 13]
+Eb_MAJ_9 = [6, 5, 3, 3, 4, 3]
+ALT_Eb_MAJ_9 = [3, 5, 3, Note.X, 4, 6]
 A_MIN = [Note.X, 0, 2, 2, 1, 0]
 A_MIN_7 = [Note.X, 0, 2, 0, 1, 0]
 
@@ -58,6 +59,14 @@ class CableTest(unittest.TestCase):
         print(len(results))
         self.assertTrue(E_MAJ_9 in results)
 
+    def test_fingers(self):
+        cable = Cable(STANDARD, 3, 3)
+        results = cable.generate(Note.Eb, quality=Quality.MAJ,
+                                 extension=Extension.E9)
+        results = list(results)
+        self.assertFalse(Eb_MAJ_9 in results)
+        self.assertFalse(ALT_Eb_MAJ_9 in results)
+
     def test_E_MIN_7_b13(self):
         cable = Cable(STANDARD, 3)
         results = cable.generate(Note.E, Interval.b13, quality=Quality.MIN,
@@ -72,8 +81,7 @@ class CableTest(unittest.TestCase):
                                  extension=Extension.E9)
         results = list(results)
         print(len(results))
-        self.assertTrue(any(filter(lambda x: x[0] == 11 and x[1] == 13,
-                                   results)))
+        print(list(filter(lambda x: len(set(filter(bool, x))) > 3, results)))
         self.assertTrue(Eb_MAJ_9 in results)
 
     def test_intervals(self):
@@ -104,14 +112,13 @@ class CableTest(unittest.TestCase):
         min_maxes = map(min_max, results)
         abs_diffs = map(lambda x: abs(x[0] - x[1]), min_maxes)
         self.assertTrue(all(map(lambda x: x <= span, abs_diffs)))
-    
+
     def test_E_13(self):
         cable = Cable(STANDARD, 3)
         results = cable.generate(Note.E,
                                  extension=Extension.E13)
         results = list(results)
         self.assertTrue(len(results))
-
 
 
 if __name__ == '__main__':
