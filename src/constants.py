@@ -149,64 +149,35 @@ class Quality(Enum):
     Enum of common chord qualities
     TODO: Support MAJb5 etc?
     '''
-    MAJ = 1
-    MIN = 2
-    HALF_DIM = 3
-    DIM = 4  # implies a bb7
-    AUG = 5
-    DOM = 6  # implies a b7
-    SUS2 = 7
-    SUS4 = 8
-    SUSb2 = 9
-    SUSs2 = 10
-    SUSb4 = 11
-    SUSs4 = 12
-    MIN_MAJ = 13
+    MAJ = auto()
+    MIN = auto()
+    HALF_DIM = auto()
+    DIM = auto()  # implies a bb7
+    AUG = auto()
+    DOM = auto()  # implies a b7
+    SUS2 = auto()
+    SUS4 = auto()
+    SUSb2 = auto()
+    SUSs2 = auto()
+    SUSb4 = auto()
+    SUSs4 = auto()
+    MIN_MAJ = auto()
 
 
 class Extension(Enum):
     '''
     Enum of common extensions
     '''
-    E7 = 0
-    E9 = 1
-    E11 = 2
-    E13 = 3
-    Eb9 = 4
-    Es9 = 5
-    Eb11 = 6
-    Es11 = 7
-    Eb13 = 8
-    Es13 = 9
-
-
-# TODO: aliases do fuck this up. use .name property?
-NINTHS = frozenset((Interval.MINOR_SECOND, Interval.MAJOR_SECOND,
-                    Interval.AUGMENTED_SECOND, Interval.NINTH,
-                    Interval.FLAT_NINTH, Interval.SHARP_NINTH))
-THIRDS = frozenset((Interval.MINOR_THIRD, Interval.MAJOR_THIRD,
-                    Interval.AUGMENTED_THIRD))
-ELEVENTHS = frozenset((Interval.DIMINISHED_FOURTH, Interval.PERFECT_FOURTH,
-                       Interval.AUGMENTED_FOURTH, Interval.FLAT_ELEVENTH,
-                       Interval.ELEVENTH, Interval.SHARP_ELEVENTH))
-FIFTHS = frozenset((Interval.DIMINISHED_FIFTH, Interval.PERFECT_FIFTH,
-                    Interval.AUGMENTED_FIFTH))
-THIRTEENTHS = frozenset((Interval.MINOR_SIXTH, Interval.MAJOR_SIXTH,
-                         Interval.AUGMENTED_SIXTH, Interval.THIRTEENTH,
-                         Interval.FLAT_THIRTEENTH, Interval.SHARP_THIRTEENTH))
-SEVENTHS = frozenset((Interval.MAJOR_SEVENTH, Interval.MINOR_SEVENTH,
-                      Interval.DIMINISHED_SEVENTH))
-
-# map degrees to intervals
-DEGREE_MAP = reduce(lambda prev, curr: merge_dicts(prev, curr),
-                    map(stargs(map_dict), ((Degree.NINTH, NINTHS),
-                                           (Degree.THIRD, THIRDS),
-                                           (Degree.ELEVENTH, ELEVENTHS),
-                                           (Degree.FIFTH, FIFTHS),
-                                           (Degree.THIRTEENTH, THIRTEENTHS),
-                                           (Degree.SEVENTH, SEVENTHS),
-                                           (Degree.ROOT, {Interval.ROOT}))),
-                    dict())
+    E7 = auto()
+    E9 = auto()
+    E11 = auto()
+    E13 = auto()
+    Eb9 = auto()
+    Es9 = auto()
+    Eb11 = auto()
+    Es11 = auto()
+    Eb13 = auto()
+    Es13 = auto()
 
 # TODO: octaves?
 # eg maybe a 9th should always be +1 oct, bass notes on instruments like 

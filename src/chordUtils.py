@@ -1,14 +1,4 @@
-from constants import Note, Quality, Interval, Extension, Degree, DEGREE_MAP
-
-
-def is_major(chord_name):
-    '''Guesses a chord is major or minor by its capitalization'''
-    return chord_name[0].isupper()
-
-
-def to_chroma(pitch):
-    '''Convert a numeric pitch in any octave to a chroma between 0-12'''
-    return pitch % 12
+from constants import Note, Quality, Interval, Extension, Degree
 
 
 def sharp_flat_delta(note_name):
@@ -24,36 +14,17 @@ def sharp_flat_delta(note_name):
 
 
 def get_intervals(root, quality, extension, *add):
-    intervals = get_quality_intervals(quality)
+    intervals = get_quality_intervals(quality, extension)
     extension_intervals = get_extension_intervals(quality, extension)
-    return bag_intervals(intervals, extension_intervals, add)
+    return intervals + extension_intervals + list(add)
 
 
-def get_relative_interval(root, relative_note, interval, octave=None):
-    # get octave between root and open string
-    target_note = root + interval
-    return relative_note.interval_to(target_note)
-
-
-def bag_intervals(quality, extended, add):
-    '''Return a dict of degrees to intervals
-    Ensures that extended notes override quality notes, and that added notes
-    override both.
-    '''
-    intervals = {}
-    for interval in quality:
-        intervals[DEGREE_MAP[interval]] = interval
-    for interval in extended:
-        intervals[DEGREE_MAP[interval]] = interval
-    for interval in add:
-        intervals[DEGREE_MAP[interval]] = interval
-    return intervals.values()
-
-
-def get_quality_intervals(quality):
-    if quality is None:
-        return []
-    return QUALITY_NOTE_MAP[quality]
+def get_quality_intervals(quality, extension):
+    if extension is None and quality is None:
+        return dict()
+    elif quality is None:
+        return QUALITY_NOTE_MAP[Quality.MAJ].copy()
+    return QUALITY_NOTE_MAP[quality].copy()
 
 
 def get_extension_intervals(quality, extension):
@@ -61,7 +32,7 @@ def get_extension_intervals(quality, extension):
     if extension is None or (extension == Extension.E7 and
                              quality in {Quality.DIM, Quality.DOM,
                                          Quality.MIN_MAJ}):
-        return []
+        return list()
     if extension == Extension.E7:
         if quality in (Quality.MIN, Quality.HALF_DIM):
             return [Interval.MINOR_SEVENTH]
@@ -87,48 +58,69 @@ def get_intervals_from_fingering(tuning, root, fingering):
 
 
 QUALITY_NOTE_MAP = {
-    Quality.HALF_DIM: [Interval.ROOT, Interval.MINOR_THIRD,
+    Quality.HALF_DIM: [Interval.ROOT,
+                       Interval.MINOR_THIRD,
                        Interval.DIMINISHED_FIFTH],
-    Quality.MIN: [Interval.ROOT, Interval.MINOR_THIRD,
+    Quality.MIN: [Interval.ROOT,
+                  Interval.MINOR_THIRD,
                   Interval.PERFECT_FIFTH],
-    Quality.MAJ: [Interval.ROOT, Interval.MAJOR_THIRD,
+    Quality.MAJ: [Interval.ROOT,
+                  Interval.MAJOR_THIRD,
                   Interval.PERFECT_FIFTH],
-    Quality.SUS2: [Interval.ROOT, Interval.MAJOR_SECOND,
+    Quality.SUS2: [Interval.ROOT,
+                   Interval.MAJOR_SECOND,
                    Interval.PERFECT_FIFTH],
-    Quality.SUSb2: [Interval.ROOT, Interval.MINOR_SECOND,
+    Quality.SUSb2: [Interval.ROOT,
+                    Interval.MINOR_SECOND,
                     Interval.PERFECT_FIFTH],
-    Quality.SUSs2: [Interval.ROOT, Interval.AUGMENTED_SECOND,
+    Quality.SUSs2: [Interval.ROOT,
+                    Interval.AUGMENTED_SECOND,
                     Interval.PERFECT_FIFTH],
-    Quality.SUS4: [Interval.ROOT, Interval.PERFECT_FOURTH,
+    Quality.SUS4: [Interval.ROOT,
+                   Interval.PERFECT_FOURTH,
                    Interval.PERFECT_FIFTH],
-    Quality.SUSb4: [Interval.ROOT, Interval.DIMINISHED_FOURTH,
+    Quality.SUSb4: [Interval.ROOT,
+                    Interval.DIMINISHED_FOURTH,
                     Interval.PERFECT_FIFTH],
-    Quality.SUSs4: [Interval.ROOT, Interval.AUGMENTED_FOURTH,
+    Quality.SUSs4: [Interval.ROOT,
+                    Interval.AUGMENTED_FOURTH,
                     Interval.PERFECT_FIFTH],
-    Quality.AUG: [Interval.ROOT, Interval.MAJOR_THIRD,
+    Quality.AUG: [Interval.ROOT,
+                  Interval.MAJOR_THIRD,
                   Interval.AUGMENTED_FIFTH],
-    Quality.DIM: [Interval.ROOT, Interval.MINOR_THIRD,
-                  Interval.DIMINISHED_FIFTH, Interval.DIMINISHED_SEVENTH],
-    Quality.DOM: [Interval.ROOT, Interval.MAJOR_THIRD,
-                  Interval.PERFECT_FIFTH, Interval.MINOR_SEVENTH],
-    Quality.MIN_MAJ: [Interval.ROOT, Interval.MINOR_THIRD,
-                      Interval.PERFECT_FIFTH, Interval.MAJOR_SEVENTH]
+    Quality.DIM: [Interval.ROOT,
+                  Interval.MINOR_THIRD,
+                  Interval.DIMINISHED_FIFTH,
+                  Interval.DIMINISHED_SEVENTH],
+    Quality.DOM: [Interval.ROOT,
+                  Interval.MAJOR_THIRD,
+                  Interval.PERFECT_FIFTH,
+                  Interval.MINOR_SEVENTH],
+    Quality.MIN_MAJ: [Interval.ROOT,
+                      Interval.MINOR_THIRD,
+                      Interval.PERFECT_FIFTH,
+                      Interval.MAJOR_SEVENTH]
 }
-
 # TODO: Define priorities
 EXTENSION_NOTE_MAP = {
     Extension.Eb9: [Interval.MINOR_SECOND],
     Extension.E9: [Interval.MAJOR_SECOND],
     Extension.Es9: [Interval.AUGMENTED_SECOND],
-    Extension.Eb11: [Interval.MAJOR_SECOND, Interval.DIMINISHED_FOURTH],
-    Extension.E11: [Interval.MAJOR_SECOND, Interval.PERFECT_FOURTH],
-    Extension.Es11: [Interval.MAJOR_SECOND, Interval.AUGMENTED_FOURTH],
-    Extension.Eb13: [Interval.MAJOR_SECOND, Interval.PERFECT_FOURTH,
+    Extension.Eb11: [Interval.MAJOR_SECOND,
+                     Interval.DIMINISHED_FOURTH],
+    Extension.E11: [Interval.MAJOR_SECOND,
+                    Interval.PERFECT_FOURTH],
+    Extension.Es11: [Interval.MAJOR_SECOND,
+                     Interval.AUGMENTED_FOURTH],
+    Extension.Eb13: [Interval.MAJOR_SECOND,
+                     Interval.PERFECT_FOURTH,
                      Interval.MINOR_SIXTH],
     Extension.E13: [Interval.MAJOR_SECOND,
-                    Interval.PERFECT_FOURTH, Interval.MAJOR_SIXTH],
+                    Interval.PERFECT_FOURTH,
+                    Interval.MAJOR_SIXTH],
     Extension.Es13: [Interval.MAJOR_SECOND,
-                     Interval.PERFECT_FOURTH, Interval.AUGMENTED_SIXTH]
+                     Interval.PERFECT_FOURTH,
+                     Interval.AUGMENTED_SIXTH]
 }
 
 
