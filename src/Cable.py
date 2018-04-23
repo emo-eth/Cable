@@ -1,5 +1,5 @@
 '''Chord generator library'''
-import chordUtils as cu
+from chordUtils import Chord, get_intervals
 import util
 from itertools import chain
 from constants import Quality, Interval, Note, STANDARD
@@ -28,15 +28,16 @@ class Cable(object):
                 will generate roots with the root and these additions, with no
                 other notes
         """
-        if isinstance(root, cu.Chord):
+        if isinstance(root, Chord):
             add = root.add
             bass = root.bass
             quality = root.quality
             extension = root.extension
             root = root.root
+        # default to MAJ if nothing specified
         if quality is None and extension is None and len(add) == 0:
             quality = Quality.MAJ
-        intervals = set(cu.get_intervals(root, quality, extension, *add))
+        intervals = set(get_intervals(root, quality, extension, *add))
         yield from self.generate_chords(root, bass, intervals, self.tuning)
 
     def generate_chords(self, root, bass, intervals, strings, placed=set(),
@@ -52,22 +53,30 @@ class Cable(object):
             fingering {list(int|Note.X)} -- fingering of constructed chord
                 thus far
         """
+        bass_interval = root.interval_to(bass) if bass else None
         # make sure we can make the whole chord
         # TODO: decide optional notes for large voicings
-        bass_interval = root.interval_to(bass) if bass else None
         if self.unable_to_voice(bass_interval, strings, intervals, placed):
             return
+        # strings with frets (not open or dead)
         filtered_fingering = list(filter(bool, fingering))
+        # any notes placed, for deciding to force bass
         notes_placed = len(list(filter(lambda x: x != Note.X, fingering))) > 0
+        # frets in fingering
         frets = set(filtered_fingering)
+        # minimum number of fingers needed to fret above notes
         fingers = len(frets)
+        # throw out chords that are impossible to finger
         if self.invalid_fingering(filtered_fingering, frets):
             return
         # base case
         if len(strings) == 0:
             yield fingering
             return
+        # lowest/highest: current lowest/highest
+        # min/max: lowest/highest allowed frets
         lowest_fret = highest_fret = min_fret = max_fret = 0
+        # if there are fretted notes, determine the available fret span
         if frets:
             lowest_fret, highest_fret = util.min_max(frets)
             remaining_span = self.span - (highest_fret - lowest_fret)
@@ -75,19 +84,22 @@ class Cable(object):
             max_fret = highest_fret + remaining_span
             if min_fret < 0:
                 min_fret = 0
+        # interval to lowest fret
         min_fret_interval = Interval(min_fret)
+        # lowest possible note to fret on this string
         min_fretted_note = strings[0] + min_fret_interval
 
+        # curry args with a function call we can unpack for less verbosity
         def args(): return (root, bass, intervals, strings[1:], placed.copy(),
                             fingering.copy())
+        # force bass note on this string if no other notes placed
         if bass and not notes_placed:
             yield from self._generate_helper(*args(), bass_interval,
                                              lambda: bass_interval.value)
-        else:
+        else:  # otherwise iterate over intervals
             for interval in intervals:
+                # get interval to fret this note on this string
                 fret_interval = min_fretted_note.interval_to(root + interval)
-                # curry args with a function call we can unpack for less verbosity
-
                 if (not fingers or  # if no fingers have been placed, pick any fret
                     # otherwise pick any fret between min/max
                     (min_fret <=
@@ -117,7 +129,7 @@ class Cable(object):
             fret_func {func -> int|Note.X} -- possibly curried function to
                 calculate the fret on this string for this fingering
         """
-
+        # don't add bass to placed (TODO: why)
         if interval and interval in intervals:
             placed.add(interval)
         fingering = fingering + [fret_func()]
@@ -131,15 +143,16 @@ class Cable(object):
         return len(strings) < ((len(intervals) + add_bass) - len(placed))
 
     def invalid_fingering(self, filtered_fingering, frets):
+        # nothing fretted, not invalid
         if not filtered_fingering:
             return False
-        # if requires more than 4 fingers, can't finger
+        # if requires more than x fingers, can't finger
         if len(frets) > self.fingers:
             return True
         counts = Counter(filtered_fingering)
         lowest = min(filtered_fingering)
         lowest_count = counts[lowest]
-        # if more than 3 fingered notes above barred, invalid
+        # if more than (x-1) fingered notes above barred, invalid
         if len(filtered_fingering) - lowest_count > (self.fingers - 1):
             return True
         return False
