@@ -63,9 +63,12 @@ def score_difficulty(fingering):
     return len(set(filter(bool, fingering)))
 
 
-def get_intervals_from_fingering(tuning, root, fingering):
+def get_notes_from_fingering(tuning, root, fingering):
+    # remove dead strings
     filtered = filter(lambda x: x[1] != Note.X, zip(tuning, fingering))
+    # apply fret interval to string note
     notes = map(lambda t: t[0] + Interval(t[1] % 12), filtered)
+    # return list of intervals relative to root
     return list(map(lambda note: root.interval_to(note), notes))
 
 

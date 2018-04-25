@@ -37,11 +37,11 @@ class CableTest(unittest.TestCase):
         cable = Cable(STANDARD, 3)
         results = cable.generate(Note.A, bass=Note.G, quality=Quality.MAJ)
         first_intervals = map(lambda result:
-                              cu.get_intervals_from_fingering(STANDARD, Note.A,
-                                                              result)[0],
-                              results)
+                              cu.get_notes_from_fingering(STANDARD, Note.A,
+                                                          result)[0], results)
         first_notes = list(map(lambda interval: Note.A + interval,
                                first_intervals))
+        print(first_notes)
         self.assertTrue(all(map(lambda note: note == Note.G, first_notes)))
 
     def test_slash_root(self):
@@ -116,7 +116,7 @@ class CableTest(unittest.TestCase):
             note, quality=quality, extension=extension, *add)
         intervals = set(cu.get_intervals(note, quality, extension, *add))
         result_intervals = list(map(lambda x:
-                                    set(cu.get_intervals_from_fingering(
+                                    set(cu.get_notes_from_fingering(
                                         STANDARD, note, x)), results))
         result_set = set(map(frozenset, result_intervals))
         self.assertTrue(all(map(lambda x: intervals == x, result_intervals)))

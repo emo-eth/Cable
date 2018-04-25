@@ -38,6 +38,8 @@ class Cable(object):
         if quality is None and extension is None and len(add) == 0:
             quality = Quality.MAJ
         intervals = set(get_intervals(root, quality, extension, *add))
+        if bass:
+            intervals.add(root.interval_to(bass))
         yield from self.generate_chords(root, bass, intervals, self.tuning)
 
     def generate_chords(self, root, bass, intervals, strings, placed=set(),
@@ -53,15 +55,13 @@ class Cable(object):
             fingering {list(int|Note.X)} -- fingering of constructed chord
                 thus far
         """
-        bass_interval = root.interval_to(bass) if bass else None
         # make sure we can make the whole chord
         # TODO: decide optional notes for large voicings
-        if self.unable_to_voice(bass_interval, strings, intervals, placed):
+        if self.unable_to_voice(strings, intervals, placed):
             return
         # strings with frets (not open or dead)
         filtered_fingering = list(filter(bool, fingering))
         # any notes placed, for deciding to force bass
-        notes_placed = len(list(filter(lambda x: x != Note.X, fingering))) > 0
         # frets in fingering
         frets = set(filtered_fingering)
         # minimum number of fingers needed to fret above notes
@@ -93,7 +93,8 @@ class Cable(object):
         def args(): return (root, bass, intervals, strings[1:], placed.copy(),
                             fingering.copy())
         # force bass note on this string if no other notes placed
-        if bass and not notes_placed:
+        if not placed and bass:
+            bass_interval = strings[0].interval_to(bass) if bass else None
             yield from self._generate_helper(*args(), bass_interval,
                                              lambda: bass_interval.value)
         else:  # otherwise iterate over intervals
@@ -129,6 +130,7 @@ class Cable(object):
             fret_func {func -> int|Note.X} -- possibly curried function to
                 calculate the fret on this string for this fingering
         """
+        # don't add bass to placed (TODO: why)
         if interval:
             placed.add(interval)
         fingering = fingering + [fret_func()]
@@ -136,10 +138,9 @@ class Cable(object):
                                         fingering)
 
     @staticmethod
-    def unable_to_voice(bass_interval, strings, intervals, placed):
+    def unable_to_voice(strings, intervals, placed):
         # TODO: make smart about preferred notes
-        add_bass = bass_interval is not None and bass_interval not in intervals
-        return len(strings) < ((len(intervals) + add_bass) - len(placed))
+        return len(strings) < (len(intervals) - len(placed))
 
     def invalid_fingering(self, filtered_fingering, frets):
         # nothing fretted, not invalid
