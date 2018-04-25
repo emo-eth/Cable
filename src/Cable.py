@@ -129,8 +129,7 @@ class Cable(object):
             fret_func {func -> int|Note.X} -- possibly curried function to
                 calculate the fret on this string for this fingering
         """
-        # don't add bass to placed (TODO: why)
-        if interval and interval in intervals:
+        if interval:
             placed.add(interval)
         fingering = fingering + [fret_func()]
         yield from self.generate_chords(root, bass, intervals, strings, placed,
