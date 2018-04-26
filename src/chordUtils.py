@@ -13,18 +13,6 @@ class Chord(object):
         self.extension = extension
 
 
-def sharp_flat_delta(note_name):
-    if note_name.endswith('b'):
-        return -1
-    elif note_name.endswith('#'):
-        return 1
-    elif note_name.endswith('bb'):
-        return -2
-    elif note_name.endswith('x'):
-        return 2
-    return 0
-
-
 def get_intervals(root, quality, extension, *add):
     intervals = get_quality_intervals(quality, extension)
     extension_intervals = get_extension_intervals(quality, extension)
@@ -61,6 +49,27 @@ def get_extension_intervals(quality, extension):
 def score_difficulty(fingering):
     # TODO: account for barre chords
     return len(set(filter(bool, fingering)))
+
+
+def get_num_fingers(fingering):
+    filtered_fingering = list(filter(bool, fingering))
+    counts = Counter(filtered_fingering)
+    lowest = min(filtered_fingering)
+    lowest_count = counts[lowest]
+    # add 1 finger for barred lowest note
+    return (len(filtered_fingering) - lowest_count) + 1
+
+def map_fingers(fingering):
+    # TODO use self.fingers
+    filtered_fingering = list(filter(bool, fingering))
+    counts = Counter(filtered_fingering)
+    min_fret = min(filtered_fingering)
+    finger_string_map = dict()
+    max_finger = 0
+    for i, string in enumerate(fingering):
+        if string == min_fret:
+            finger_string_map[i] = 1  # 0 index fingers lol?
+        
 
 
 def get_notes_from_fingering(tuning, root, fingering):
