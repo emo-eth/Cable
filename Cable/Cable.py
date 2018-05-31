@@ -1,9 +1,9 @@
 '''Chord generator library'''
-from chordUtils import Chord, get_intervals
-import util
-from itertools import chain
-from constants import Quality, Interval, Note, STANDARD
 from collections import Counter
+from itertools import chain
+from .chordUtils import Chord, get_intervals
+from . import util
+from .constants import Quality, Interval, Note, STANDARD
 
 
 class Cable(object):

@@ -1,7 +1,7 @@
 import unittest
 import sys
-sys.path.append('../src')
-from constants import Quality, Degree, Note, Interval, Extension
+sys.path.append('../Cable')
+from Cable.constants import Quality, Degree, Note, Interval, Extension
 
 
 class ConstantsTest(unittest.TestCase):

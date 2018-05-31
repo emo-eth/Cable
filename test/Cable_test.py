@@ -1,11 +1,11 @@
 import unittest
 import sys
-sys.path.append('../src')
-import chordUtils as cu
+sys.path.append('../Cable')
+import Cable.chordUtils as cu
 from Cable import Cable
-from constants import STANDARD, Note, Quality, Interval, Extension
-from util import min_max
-from chordUtils import Chord
+from Cable.constants import STANDARD, Note, Quality, Interval, Extension
+from Cable.util import min_max
+from Cable.chordUtils import Chord
 
 E_MAJ_OPEN = [0, 2, 2, 1, 0, 0]
 E_MAJ_7 = [0, 2, 1, 1, 0, 0]

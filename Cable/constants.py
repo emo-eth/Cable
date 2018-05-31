@@ -1,6 +1,6 @@
 from enum import Enum, auto
 from functools import reduce
-from util import stargs, map_dict, merge_dicts
+from .util import stargs, map_dict, merge_dicts
 
 # dead note
 X = 'x'

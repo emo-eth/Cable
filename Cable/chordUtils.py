@@ -1,4 +1,4 @@
-from constants import Note, Quality, Interval, Extension, Degree
+from .constants import Note, Quality, Interval, Extension, Degree
 from itertools import chain
 
 

@@ -1,8 +1,8 @@
 import unittest
 import sys
-sys.path.append('../src')
-from VoiceLeader import Cable, Chord, lead
-from constants import Note
+sys.path.append('../Cable')
+from Cable.VoiceLeader import Cable, Chord, lead
+from Cable.constants import Note
 
 
 class VoiceLeaderTest(unittest.TestCase):

@@ -1,4 +1,4 @@
-from Cable import Cable, Chord
+from .Cable import Cable, Chord
 
 
 def lead(cable, *chords):

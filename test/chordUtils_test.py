@@ -1,8 +1,8 @@
 import unittest
 import sys
-sys.path.append('../src')
-import chordUtils as cu
-from constants import Quality, Degree, Note, Interval, Extension
+sys.path.append('../Cable')
+import Cable.chordUtils as cu
+from Cable.constants import Quality, Degree, Note, Interval, Extension
 
 
 class ChordUtilsTest(unittest.TestCase):
