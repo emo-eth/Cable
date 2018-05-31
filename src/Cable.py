@@ -43,7 +43,7 @@ class Cable(object):
         yield from self.generate_chords(root, bass, intervals, self.tuning)
 
     def generate_chords(self, root, bass, intervals, strings, placed=set(),
-                        fingering=[]):
+                        fingering=list()):
         """Helper generator to yield results after updating placed intervals
         and fingering.
 
@@ -90,13 +90,14 @@ class Cable(object):
         min_fretted_note = strings[0] + min_fret_interval
 
         # curry args with a function call we can unpack for less verbosity
-        def args(): return (root, bass, intervals, strings[1:], placed.copy(),
-                            fingering.copy())
+        def args(interval, fret): return (root, bass, intervals, strings[1:],
+                                          set((*placed, interval) if interval
+                                              else placed),
+                                          [*fingering, fret])
         # force bass note on this string if no other notes placed
         if not placed and bass:
             bass_interval = strings[0].interval_to(bass) if bass else None
-            yield from self._generate_helper(*args(), bass_interval,
-                                             lambda: bass_interval.value)
+            yield from self.generate_chords(*args(bass_interval, bass_interval.value))
         else:  # otherwise iterate over intervals
             for interval in intervals:
                 # get interval to fret this note on this string
@@ -106,36 +107,10 @@ class Cable(object):
                     (min_fret <=
                      min_fret + fret_interval.value <=
                      max_fret)):
-                    yield from self._generate_helper(*args(), interval, lambda: min_fret +
-                                                     fret_interval.value)
+                    yield from self.generate_chords(*args(interval, min_fret + fret_interval.value))
         # dead note, skip string
         # TODO: limit number of skipped strings
-        yield from self._generate_helper(*args(),
-                                         None, lambda: Note.X)
-
-    def _generate_helper(self, root, bass, intervals, strings, placed, fingering,
-                         interval, fret_func):
-        """Helper generator to yield results after updating placed intervals
-        and fingering.
-
-        Arguments:
-            root {Note} -- root note
-            intervals {set(Interval)} -- set of intervals in chord
-            strings {list(Note)} -- remaining open strings
-            placed {set(Interval)} -- Intervals present in fingering thus far
-            fingering {list(int|Note.X)} -- fingering of constructed chord
-                thus far
-            interval {Interval|None} -- interval relative to root that we are
-                adding to the fingering
-            fret_func {func -> int|Note.X} -- possibly curried function to
-                calculate the fret on this string for this fingering
-        """
-        # don't add bass to placed (TODO: why)
-        if interval:
-            placed.add(interval)
-        fingering = fingering + [fret_func()]
-        yield from self.generate_chords(root, bass, intervals, strings, placed,
-                                        fingering)
+        yield from self.generate_chords(*args(None, Note.X))
 
     @staticmethod
     def unable_to_voice(strings, intervals, placed):
@@ -167,23 +142,23 @@ class Cable(object):
         # allow leading and trailing dead notes
         # don't allow interspersed dead notes
         # don't allow X in between dead notes
-        last_dead = False
-        for fret in fingering:
-            if fret == Note.X:
-                if not last_dead and (dead_count and fret_count):
-                    return False
-                # don't count leading dead notes
-                if frets:
-                    dead_count += 1
+        # last_dead = False
+        # for fret in fingering:
+        #     if fret == Note.X:
+        #         if not last_dead and (dead_count and fret_count):
+        #             return False
+        #         # don't count leading dead notes
+        #         if frets:
+        #             dead_count += 1
 
-                if frets:
-                    last_dead = True
-                # allow tailing dead notes
+        #         if frets:
+        #             last_dead = True
+        #         # allow tailing dead notes
 
-            else:
-                fret_count += 1
-                last_dead = False
+        #     else:
+        #         fret_count += 1
+        #         last_dead = False
 
-        dead_cont = 0
-        fret_count = 0
-        pass
+        # dead_cont = 0
+        # fret_count = 0
+        # pass
